@@ -1,0 +1,76 @@
+   body {
+           font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+         }
+        div {
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 40px;
+         }
+        h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            width: 100%;
+            max-width: 1200px;
+         }
+        a {
+            text-decoration: none;
+            color: #333;
+            transition: color 0.2s;
+        }
+        .project-card {
+            background-color: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        .project-card h2 {
+            color: #34495e;
+            margin-top: 0;
+            font-size: 1.25rem;
+            margin-bottom: 15px;
+       }
+        .project-card a {
+            display: inline-block;
+             text-decoration: none;
+            color: #1a73e8;
+            background-color: #1a73e8;
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            text-align: center;
+            transition: background-color 0.2s;
+         }
+        a:hover {
+            text-decoration: underline;
+        } 
+        
+        .project-card a:hover {
+            background-color: #1557b0;
+        }
