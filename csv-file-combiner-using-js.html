@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Shopify CSV Combiner</title>
+
+<style>
+:root {
+    --primary: #2c7be5;
+    --primary-dark: #1a5dcc;
+    --bg: #f5f6fa;
+    --card: #ffffff;
+    --text: #1f2933;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --success: #16a34a;
+    --error: #dc2626;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Inter, Arial, sans-serif;
+    background: linear-gradient(135deg, #eef2ff, #f8fafc);
+    padding: 40px;
+    color: var(--text);
+}
+
+.container {
+    max-width: 760px;
+    margin: auto;
+    background: var(--card);
+    padding: 36px;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    animation: fadeIn 0.5s ease;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 28px;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 14px;
+    padding: 36px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #fafafa;
+}
+
+.drop-zone.active {
+    border-color: var(--primary);
+    background: #eef4ff;
+}
+
+.drop-zone p {
+    font-size: 15px;
+    color: var(--muted);
+}
+
+input[type="file"] {
+    display: none;
+}
+
+button {
+    width: 100%;
+    margin-top: 24px;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--primary), #4f8df7);
+    color: #ffffff;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    box-shadow: 0 8px 18px rgba(44,123,229,0.35);
+}
+
+button:hover {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+}
+
+.progress {
+    margin-top: 24px;
+    background: #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+    height: 10px;
+    display: none;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: var(--primary);
+    transition: width 0.3s ease;
+}
+
+.badge {
+    margin-top: 20px;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    text-align: center;
+    display: none;
+}
+
+.badge.success {
+    background: #dcfce7;
+    color: var(--success);
+}
+
+.badge.error {
+    background: #fee2e2;
+    color: var(--error);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Combine Shopify CSV Files</h2>
+
+    <div class="drop-zone" id="dropZone">
+        <p>Drag and drop CSV files here<br>or click to browse</p>
+        <input type="file" id="csvFiles" accept=".csv" multiple>
+    </div>
+
+    <button onclick="combineCSV()">Combine and Download CSV</button>
+
+    <div class="progress" id="progress">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div class="badge success" id="successBadge">CSV files combined successfully</div>
+    <div class="badge error" id="errorBadge"></div>
+</div>
+
+<script>
+const dropZone = document.getElementById("dropZone");
+const fileInput = document.getElementById("csvFiles");
+
+dropZone.addEventListener("click", () => fileInput.click());
+
+dropZone.addEventListener("dragover", e => {
+    e.preventDefault();
+    dropZone.classList.add("active");
+});
+
+dropZone.addEventListener("dragleave", () => {
+    dropZone.classList.remove("active");
+});
+
+dropZone.addEventListener("drop", e => {
+    e.preventDefault();
+    dropZone.classList.remove("active");
+    fileInput.files = e.dataTransfer.files;
+});
+
+function combineCSV() {
+    const files = fileInput.files;
+    const progress = document.getElementById("progress");
+    const progressBar = document.getElementById("progressBar");
+    const successBadge = document.getElementById("successBadge");
+    const errorBadge = document.getElementById("errorBadge");
+
+    successBadge.style.display = "none";
+    errorBadge.style.display = "none";
+
+    if (files.length < 2) {
+        errorBadge.innerText = "Please select at least two CSV files";
+        errorBadge.style.display = "block";
+        return;
+    }
+
+    let allRows = [];
+    let header = "";
+    let completed = 0;
+
+    progress.style.display = "block";
+    progressBar.style.width = "0%";
+
+    Array.from(files).forEach((file, index) => {
+        const reader = new FileReader();
+
+        reader.onload = e => {
+            const lines = e.target.result.trim().split("\n");
+
+            if (index === 0) {
+                header = lines[0];
+                allRows.push(header);
+            }
+
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].trim()) {
+                    allRows.push(lines[i]);
+                }
+            }
+
+            completed++;
+            progressBar.style.width = (completed / files.length) * 100 + "%";
+
+            if (completed === files.length) {
+                downloadCSV(allRows.join("\n"));
+                successBadge.style.display = "block";
+            }
+        };
+
+        reader.readAsText(file);
+    });
+}
+
+function downloadCSV(data) {
+    const blob = new Blob([data], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "combined-shopify-products.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+</script>
+
+</body>
+</html>
